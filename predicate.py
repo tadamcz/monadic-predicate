@@ -2,7 +2,8 @@ from anytree import Node, RenderTree, LevelOrderIter
 import string as stringpackage
 
 
-string = '!y@x(-(Ax+Dx) > ((-Bx * Cx)+(x=y)))'
+string = '@y@x(-(-Ax+Dx) > ((-Bx * Cx)+(x=y)))'
+# string = '(-Bx*Cx)'
 
 variables = stringpackage.ascii_lowercase
 sentence_letters = stringpackage.ascii_uppercase
@@ -13,7 +14,6 @@ equality = '='
 and_op = '+'
 or_op = '*'
 negation = '-'
-
 quantifiers = for_all+exists
 binary_operators = and_op + or_op + equality + right_arrow + quantifiers
 unary_operators = negation
@@ -45,19 +45,19 @@ def add_parens(string):
 	for key,value in translation.items():
 		string = string.replace(key,value)
 
-	# Add parens around the negation sign in front of a subexpression
+	# Add parens around quantifiers or the negation sign in front of a subexpression
 	i = 0
 	while i < len(string):
 		two_character_window = string[i:i+2]
-		existential_quantifier_with_variable = ['!'+x for x in variables]
-		universal_quantifier_with_variable = ['@'+x for x in variables]
-		candidate_strings = ['-(']+existential_quantifier_with_variable+universal_quantifier_with_variable
+		existential_with_variable = ['!'+x for x in variables]
+		universal_with_variable = ['@'+x for x in variables]
+		candidate_strings = ['-(']+existential_with_variable+universal_with_variable
 		if two_character_window in candidate_strings:
 			subexpression_right = find_matching_paren(string, start_index=i + 1)
 			string = string[:i]+'('+string[i:subexpression_right+1]+')'+string[subexpression_right+1:]
 
 			i += 1 #we need to move forward one index to stay in the same place because we added a parens to the left!
-		i += 2
+		i += 1
 	return string
 
 def pre_processing(string):
@@ -95,6 +95,7 @@ def print_my_tree(tree):
 		print("%s%s" % (pre, node.name))
 
 string = pre_processing(string)
+print("string after pre-processing:",string)
 result = parser(string)
 print_my_tree(result)
 
@@ -139,11 +140,5 @@ def check_tree_syntax(tree):
 				candidate = candidate.parent
 			if found_quantifier == False:
 				raise Exception("Unbound variable",variable)
-
-
-
-
-
-
 
 check_tree_syntax(result)
