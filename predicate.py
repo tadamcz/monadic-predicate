@@ -2,11 +2,6 @@ from anytree import Node, RenderTree, LevelOrderIter
 import string as stringpackage
 import itertools
 
-# string = '@x((-Ax+Dx) > (-(-Bx * Cx)))'
-string = '@x(-Bx*(Cx*Dx))'
-# string = '@x(Ax>(Ax*Bx))'
-# string = '@x((Ax*Bx)*Cx)'
-
 variables = stringpackage.ascii_lowercase
 sentence_letters = stringpackage.ascii_uppercase
 right_arrow = '>'
@@ -101,13 +96,6 @@ def print_my_tree(tree):
 	for pre, fill, node in RenderTree(tree):
 		print("%s%s" % (pre, node.name))
 
-
-string = pre_processing(string)
-print("string after pre-processing:", string)
-result = parser(string)
-print_my_tree(result)
-
-
 def check_tree_syntax(tree):
 	for node in LevelOrderIter(tree):
 		name = node.name
@@ -152,27 +140,86 @@ def check_tree_syntax(tree):
 
 
 def generate_interpretations(tree):
-	sentence_letters_in_formula = []
-	for node in LevelOrderIter(tree):
-		name = node.name
-		if name in sentence_letters and name not in sentence_letters_in_formula:
-			sentence_letters_in_formula.append(name)
-	max_domain_size = 2**len(sentence_letters_in_formula)
-	interpretations = []
-	# for domain_size in range(1,max_domain_size+1):
-	for domain_size in range(max_domain_size,max_domain_size+1):
-		print(domain_size)
-		interpretations_of_constant = [i for i in itertools.product([True,False],repeat=len(sentence_letters_in_formula))]
-		for i in range(len(interpretations_of_constant)):
-			interpretations_of_constant[i] = {sentence_letters_in_formula[j]:interpretations_of_constant[i][j] for j in range(len(sentence_letters_in_formula))}
+	has_equality = False
 
-		for interpretation in itertools.product(interpretations_of_constant,repeat=domain_size):
-			interpretation_dict = {'const'+str(i):interpretation[i] for i in range(len(interpretation))}
-			interpretations.append(interpretation_dict)
-			print(len(interpretations))
-	print(len(interpretations))
+	# use set() to find uniques
+	variables_in_formula = set()
+	sentence_letters_in_formula = set()
+	for node in LevelOrderIter(tree):
+		if node.name==equality:
+			has_equality=True
+		if node.name in variables:
+			variables_in_formula.add(node.name)
+		if node.name in sentence_letters:
+			sentence_letters_in_formula.add(node.name)
+
+	# convert to list so as to make subscriptable
+	sentence_letters_in_formula = list(sentence_letters_in_formula)
+	variables_in_formula = list(variables_in_formula)
+
+	if sentence_letters_in_formula == []:
+		partitions = {'Universe': True}
+	else:
+		letter_permutations = [i for i in itertools.product([True,False],repeat=len(sentence_letters_in_formula))]
+
+		partitions = []
+		for permutation_tuple in letter_permutations:
+			permutation_dict = {}
+			for i in range(len(sentence_letters_in_formula)):
+				letter = sentence_letters_in_formula[i]
+				truth_value = permutation_tuple[i]
+				permutation_dict[letter] = truth_value
+			partitions.append(permutation_dict)
+
+	if has_equality:
+		cardinality_permutations = [i for i in itertools.product(range(len(variables_in_formula)+1), repeat=len(partitions))]
+	else:
+		cardinality_permutations = [i for i in itertools.product([0,1], repeat=len(partitions))] #1 represents any cardinality greater than 0
+
+	interpretation_eq_classes = []
+	for permutation in cardinality_permutations:
+		interpretation_eq_classes.append(list(zip(partitions, permutation)))
+
+	# Printing (useful for debugging)
+	'''
+	eq_class_counter = 0
+	for eq_class in interpretation_eq_classes:
+		eq_class_counter += 1
+		print('interpretation equivalence class', eq_class_counter)
+		partition_member_counter = 0
+		for element in eq_class:
+			partition_member_description, partition_member_cardinality = element
+			partition_member_counter += 1
+			print('    member', partition_member_counter, 'of partition:', partition_member_description,
+				  'has cardinality', partition_member_cardinality)
+	'''
+
+	interpretations = []
+	for eq_class in interpretation_eq_classes:
+		instantiation = instantiate_interpretation_equivalence_class(eq_class)
+		if instantiation is not None:
+			interpretations.append(instantiation)
+
+	# Printing (useful for debugging)
+	'''interpretation_counter = 0
+	for interpretation in interpretations:
+		interpretation_counter += 1
+		print('interpretation',interpretation_counter,'with domain size',len(interpretation))
+		for constant in interpretation.items():
+			print(constant)'''
 	return interpretations
 
+def instantiate_interpretation_equivalence_class(equivalence_class):
+	instantiated_interpretation = {}
+	constant = 0
+	for partition_element in equivalence_class:
+		cardinality = partition_element[1]
+		partition_element_description = partition_element[0]
+		for j in range(cardinality):
+			instantiated_interpretation['c'+str(constant)] = partition_element_description
+			constant += 1
+	if instantiated_interpretation != {}: #empty domains are not allowed
+		return instantiated_interpretation
 
 def check_tree_under_interpretation(node,interpretation):
 	def replace_variable_with_constant_in_quantified_subtree(tree,constant):
@@ -207,6 +254,8 @@ def check_tree_under_interpretation(node,interpretation):
 		return check_tree_under_interpretation(node.children[0],interpretation) or check_tree_under_interpretation(node.children[1],interpretation)
 	if node.name == '-':
 		return not check_tree_under_interpretation(node.children[0],interpretation)
+	if node.name == '=':
+		return node.children[0].name == node.children[1].name
 	if node.name in sentence_letters:
 		letter = node.name
 		constant = node.children[0].name
@@ -216,11 +265,20 @@ def check_tree_theoremhood(tree):
 	interpretations = generate_interpretations(tree)
 	for interpretation in interpretations:
 		if check_tree_under_interpretation(tree,interpretation) == False:
-			return False
-	return True
+			return {'Theoremhood':False, 'Counter-example':interpretation}
+	return {'Theoremhood':True}
 
-check_tree_syntax(result)
-x = generate_interpretations(result)
-y = check_tree_under_interpretation(result,x[0])
-z = check_tree_theoremhood(result)
-print("h")
+
+def main(string):
+	string = pre_processing(string)
+	print("string after pre-processing:", string)
+	tree = parser(string)
+	print_my_tree(tree)
+	check_tree_syntax(tree)
+	print(check_tree_theoremhood(tree))
+
+# main('@x((-Ax+Dx) > (-(-Bx * Cx)))')
+main('@x@y(-Bx*(Cx*Dx))')
+main('@x(Ax>(Ax*Bx))')
+main('@x(Px)')
+main('@x!y(x=y)')
