@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <title>Monadic predicate logic theoremhood checker</title>
 </head>
-<body>
+<body><div class="myclass">
+    <h1>Monadic predicate logic theoremhood checker</h1>
+Monadic predicate logic (with identity) is decidable (Löwenheim-Skolem 1915, or more conveniently Boolos, Burgess, and Jeffrey 2007, Ch. 21). This website lets you can check whether a formula is a theorem.
+If it's not a theorem, you will be shown a counter-example.
+</div>
+
 <form method="POST">
     <div>{{form.formula.label}}<div id="text_area">{{form.formula}}</div></div>
     <div><input type="submit"> </div>
@@ -44,6 +49,10 @@ You can add logical symbols by clicking the buttons above, or by using this corr
 <pre>{{result|safe}}</pre>
 </div>
 
+<div>
+    By <a href="https://tmkadamcz.github.io/">Tom Adamczewski</a>.
+    Code <a href="https://github.com/tmkadamcz/monadic-predicate">on GitHub</a>.
+</div>
 <script>
     text_area = document.getElementById("formula")
 
