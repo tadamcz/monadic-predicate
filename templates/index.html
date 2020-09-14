@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monadic predicate logic theoremhood checker</title>
+</head>
+<body>
+<form method="POST">
+    <div>{{form.formula.label}}<div id="text_area">{{form.formula}}</div></div>
+    <div><input type="submit"> </div>
+</form>
+
+<style>
+    .myclass {margin-bottom: 40px;}
+</style>
+
+
+<div class="myclass">
+    Add symbols:
+    {%for symbol in ['→','∀','∃','¬','∧','∨']%}
+    <button onclick="insertAtCursor(text_area,'{{symbol}}')">{{symbol}}</button>
+    {%endfor%}
+</div>
+
+You can add logical symbols by clicking the buttons above, or by using this correspondence:
+
+<div class="myclass">
+    <table>
+    <tr>
+        <th>Logical symbol &emsp;</th>
+        <th>Keyboard character</th>
+    </tr>
+    {%for unicode,regular in [('→',','),('∀','@'),('∃','!'),('¬','-'),('∧','+'),('∨','*')]%}
+    <tr>
+        <td>{{unicode}}</td>
+        <td>{{regular}}</td>
+    </tr>
+    {%endfor%}
+    </table>
+</div>
+
+
+<div class="myclass">
+<pre>{{result|safe}}</pre>
+</div>
+
+<script>
+    text_area = document.getElementById("formula")
+
+   function insertAtCursor(myField, myValue) {
+        console.log(myField)
+    //IE support
+    if (document.selection) {
+        myField.focus();
+        sel = document.selection.createRange();
+        sel.text = myValue;
+    }
+    //MOZILLA and others
+    else if (myField.selectionStart || myField.selectionStart == '0') {
+        var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
+        myField.value = myField.value.substring(0, startPos)
+            + myValue
+            + myField.value.substring(endPos, myField.value.length);
+        myField.selectionStart = startPos + myValue.length;
+        myField.selectionEnd = startPos + myValue.length;
+    } else {
+        myField.value += myValue;
+    }
+}
+
+
+</script>
+
+</body>
+</html>

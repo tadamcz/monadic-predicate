@@ -1,6 +1,10 @@
 from anytree import Node, RenderTree, LevelOrderIter
 import string as stringpackage
 import itertools
+from io import StringIO
+import sys
+import json
+import yaml
 
 variables = stringpackage.ascii_lowercase
 sentence_letters = stringpackage.ascii_uppercase
@@ -105,9 +109,24 @@ def parser(string):
 		raise Exception("Root node with more than 1 child")
 
 
-def print_my_tree(tree):
+def print_my_tree(tree,use_unicode=False):
+	print("Tree representation of your formula:")
 	for pre, fill, node in RenderTree(tree):
-		print("%s%s" % (pre, node.name))
+		name_to_print = node.name
+		if use_unicode:
+			if node.name == '>':
+				name_to_print = '→'
+			if node.name == '@':
+				name_to_print = '∀'
+			if node.name == '!':
+				name_to_print = '∃'
+			if node.name == '-':
+				name_to_print = '¬'
+			if node.name == '+':
+				name_to_print = '∧'
+			if node.name == '*':
+				name_to_print = '∨'
+		print("%s%s" % (pre, name_to_print))
 
 def check_tree_syntax(tree):
 	for node in LevelOrderIter(tree):
@@ -293,18 +312,31 @@ def main(string):
 	string = pre_processing(string)
 	print("string after pre-processing:", string)
 	tree = parser(string)
-	print_my_tree(tree)
+	print_my_tree(tree,use_unicode=True)
 	check_tree_syntax(tree)
-	print(check_tree_theoremhood(tree))
+	theoremhood = check_tree_theoremhood(tree)
+	print(yaml.dump(theoremhood,sort_keys=False))
+
+def output_as_string(formula):
+	old_stdout = sys.stdout
+	sys.stdout = mystdout = StringIO()
+
+	main(formula)
+
+	sys.stdout = old_stdout
+	result_as_string = mystdout.getvalue()
+	print(result_as_string)  # I still want to see my print statement for debugging!
+	return(result_as_string)
+
 
 # main('@x((-Ax+Dx) > (-(-Bx * Cx)))')
 # main('@x@y(-Bx*(Cx*Dx))')
 # main('@x(Ax>(Ax*Bx))')
 # main('@x(Px)')
 # main('@z@x!y((x=y)+(y=z))')
-main('!y@x(Fy>Fx)')
-main('@xAx')
-main('@x((Ax>Bx))')
-main('@x!t((Ax>Bx))')
-main('@x!t(Ax>Bx)')
-main('@x!d(Px*-Pd)')
+# main('!y@x(Fy>Fx)')
+# main('@xAx')
+# main('@x((Ax>Bx))')
+# main('@x!t((Ax>Bx))')
+# main('@x!t(Ax>Bx)')
+# main('@x!d(Px*-Pd)')
