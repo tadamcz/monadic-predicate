@@ -63,7 +63,14 @@ def add_parens(string):
 def pre_processing(string):
 	string = string.replace(' ', '')
 	string = add_parens(string)
+	check_string_syntax(string)
 	return string
+
+def check_string_syntax(string):
+	for i in range(len(string)):
+		if string[i] in quantifiers:
+			if string[i+1] not in variables:
+				raise Exception("Quantifier '"+string[i]+"' must be followed by a variable, not by '"+string[i+1]+"'")
 
 
 def parser(string):
@@ -89,7 +96,13 @@ def parser(string):
 			i += 1
 		else:
 			raise Exception("Syntax error. Unknown character", current_character)
-	return tree
+
+	if tree.name != 'root':
+		return tree
+	elif len(tree.children) <= 1:
+		return tree.children[0]
+	else:
+		raise Exception("Root node with more than 1 child")
 
 
 def print_my_tree(tree):
@@ -230,8 +243,11 @@ def check_tree_under_interpretation(node,interpretation):
 				node.name = constant
 		return tree
 
-	if node.name == 'root':
-		node = node.children[0]
+	# # pretty hacky: ignore any node named 'root'. The better way would be to solve the bug in the parser
+	# # that adds superfluous 'root' nodes when there are superfluous parentheses.
+	# if node.name == 'root':
+	# 	return check_tree_under_interpretation(node.children[0],interpretation)
+
 	if node.name == '@':
 		for constant in interpretation.keys():
 			node = replace_variable_with_constant_in_quantified_subtree(node,constant)
@@ -256,6 +272,10 @@ def check_tree_under_interpretation(node,interpretation):
 		return not check_tree_under_interpretation(node.children[0],interpretation)
 	if node.name == '=':
 		return node.children[0].name == node.children[1].name
+	if node.name == '>':
+		return not(
+				check_tree_under_interpretation(node.children[0],interpretation) and not check_tree_under_interpretation(node.children[1],interpretation)
+		)
 	if node.name in sentence_letters:
 		letter = node.name
 		constant = node.children[0].name
@@ -278,7 +298,13 @@ def main(string):
 	print(check_tree_theoremhood(tree))
 
 # main('@x((-Ax+Dx) > (-(-Bx * Cx)))')
-main('@x@y(-Bx*(Cx*Dx))')
-main('@x(Ax>(Ax*Bx))')
-main('@x(Px)')
-main('@x!y(x=y)')
+# main('@x@y(-Bx*(Cx*Dx))')
+# main('@x(Ax>(Ax*Bx))')
+# main('@x(Px)')
+# main('@z@x!y((x=y)+(y=z))')
+main('!y@x(Fy>Fx)')
+main('@xAx')
+main('@x((Ax>Bx))')
+main('@x!t((Ax>Bx))')
+main('@x!t(Ax>Bx)')
+main('@x!d(Px*-Pd)')
