@@ -1,3 +1,4 @@
+gunicorn
 PyYAML~=5.3.1
 anytree~=2.8.0
 mpld3~=0.3
