@@ -12,8 +12,8 @@ right_arrow = '>'
 for_all = '@'
 exists = '!'
 equality = '='
-and_op = '+'
-or_op = '*'
+and_op = '*'
+or_op = '+'
 negation = '-'
 quantifiers = for_all + exists
 binary_operators = and_op + or_op + equality + right_arrow + quantifiers
@@ -122,9 +122,9 @@ def print_my_tree(tree,use_unicode=False):
 				name_to_print = '∃'
 			if node.name == '-':
 				name_to_print = '¬'
-			if node.name == '+':
-				name_to_print = '∧'
 			if node.name == '*':
+				name_to_print = '∧'
+			if node.name == '+':
 				name_to_print = '∨'
 		print("%s%s" % (pre, name_to_print))
 
@@ -283,9 +283,9 @@ def check_tree_under_interpretation(node,interpretation):
 			if subtree_truth_value == True:
 				return True
 		return False
-	if node.name == '+':
-		return check_tree_under_interpretation(node.children[0],interpretation) and check_tree_under_interpretation(node.children[1],interpretation)
 	if node.name == '*':
+		return check_tree_under_interpretation(node.children[0],interpretation) and check_tree_under_interpretation(node.children[1],interpretation)
+	if node.name == '+':
 		return check_tree_under_interpretation(node.children[0],interpretation) or check_tree_under_interpretation(node.children[1],interpretation)
 	if node.name == '-':
 		return not check_tree_under_interpretation(node.children[0],interpretation)

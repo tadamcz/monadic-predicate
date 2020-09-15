@@ -34,8 +34,8 @@ def parse_unicode(formula):
 	formula = formula.replace('∀','@')
 	formula = formula.replace('∃','!')
 	formula = formula.replace('¬','-')
-	formula = formula.replace('∧','+')
-	formula = formula.replace('∨','*')
+	formula = formula.replace('∧','*')
+	formula = formula.replace('∨','+')
 	return formula
 
 
