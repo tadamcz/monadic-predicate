@@ -75,6 +75,9 @@ def check_string_syntax(string):
 		if string[i] in quantifiers:
 			if string[i+1] not in variables:
 				raise Exception("Quantifier '"+string[i]+"' must be followed by a variable, not by '"+string[i+1]+"'")
+		if string[i] in sentence_letters:
+			if string[i+1] not in variables:
+				raise Exception("Sentence letter '" + string[i] + "' must be followed by a variable, not by '" + string[i + 1] + "'")
 
 
 def parser(string):
@@ -99,7 +102,7 @@ def parser(string):
 			Node(current_character, parent=tree)
 			i += 1
 		else:
-			raise Exception("Syntax error. Unknown character", current_character)
+			raise Exception("Not a well-formed formula. Unknown character '"+current_character+"'")
 
 	if tree.name != 'root':
 		return tree
@@ -133,20 +136,20 @@ def check_tree_syntax(tree):
 		name = node.name
 		if name in sentence_letters:
 			if len(node.children) != 1:
-				raise Exception()
+				raise Exception("Not a well-formed formula")
 			variable = node.children[0]
 			if variable.name not in variables:
-				raise Exception
+				raise Exception("Not a well-formed formula")
 		if name in binary_operators:
 			if len(node.children) != 2:
-				raise Exception
+				raise Exception("Not a well-formed formula")
 		if name in unary_operators:
 			if len(node.children) != 1:
-				raise Exception
+				raise Exception("Not a well-formed formula")
 		if name == equality:
 			for variable in [x.name for x in node.children]:
 				if variable not in variables:
-					raise Exception
+					raise Exception("Not a well-formed formula")
 
 		if name in quantifiers:
 			number_of_variables = 0
@@ -310,7 +313,7 @@ def check_tree_theoremhood(tree):
 
 def main(string):
 	string = pre_processing(string)
-	print("string after pre-processing:", string)
+	print("formula with added parentheses:", string)
 	tree = parser(string)
 	print_my_tree(tree,use_unicode=True)
 	check_tree_syntax(tree)

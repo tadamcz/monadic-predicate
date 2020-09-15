@@ -16,7 +16,10 @@ If it's not a theorem, you will be shown a counter-example.
 </form>
 
 <style>
-    .myclass {margin-bottom: 40px;}
+    .myclass {
+        margin-bottom: 40px;
+        max-width: 50em;
+    }
 </style>
 
 
@@ -26,6 +29,13 @@ If it's not a theorem, you will be shown a counter-example.
     <button onclick="insertAtCursor(text_area,'{{symbol}}')">{{symbol}}</button>
     {%endfor%}
 </div>
+
+<div class="myclass">Propositional logic sentence letters such as P are not currently supported. Only predicate logic sentence letters
+    with a variable, such as Px, are supported.</div>
+
+Example formulae:
+<pre>@x!y(x=y)</pre>
+<pre>@x(Ax>(Ax*Bx))</pre>
 
 You can add logical symbols by clicking the buttons above, or by using this correspondence:
 

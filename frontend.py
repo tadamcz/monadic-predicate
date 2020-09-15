@@ -23,7 +23,10 @@ def index():
 	if request.method == 'POST':
 		formula = form.data['formula']
 		formula = parse_unicode(formula)
-		result = backend.output_as_string(formula)
+		try:
+			result = backend.output_as_string(formula)
+		except Exception as e:
+			result = str(e)
 		result = result.replace('\n','<br>')
 		result = result.replace('    ','&emsp;&emsp;&emsp;&emsp;')
 		return render_template('index.html', form=form,result=result,symbols=['→','∀','∃','¬','∧','∨'])
