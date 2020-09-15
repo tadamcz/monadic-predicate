@@ -1,3 +1,4 @@
+from copy import copy, deepcopy
 from anytree import Node, RenderTree, LevelOrderIter
 import string as stringpackage
 import itertools
@@ -258,12 +259,13 @@ def instantiate_interpretation_equivalence_class(equivalence_class):
 
 def check_tree_under_interpretation(node,interpretation):
 	def replace_variable_with_constant_in_quantified_subtree(tree,constant):
-		variable = tree.children[0].name
-		expression = tree.children[1]
+		tree_with_constant = deepcopy(tree)  # As a custom class, an AnyTree tree is mutable
+		variable = tree_with_constant.children[0].name
+		expression = tree_with_constant.children[1]
 		for node in LevelOrderIter(expression):
 			if node.name == variable:
 				node.name = constant
-		return tree
+		return tree_with_constant
 
 	# # pretty hacky: ignore any node named 'root'. The better way would be to solve the bug in the parser
 	# # that adds superfluous 'root' nodes when there are superfluous parentheses.
@@ -272,16 +274,16 @@ def check_tree_under_interpretation(node,interpretation):
 
 	if node.name == for_all:
 		for constant in interpretation.keys():
-			node = replace_variable_with_constant_in_quantified_subtree(node,constant)
-			subtree = node.children[1]
+			node_with_const = replace_variable_with_constant_in_quantified_subtree(node,constant)
+			subtree = node_with_const.children[1]
 			subtree_truth_value = check_tree_under_interpretation(subtree,interpretation)
 			if subtree_truth_value == False:
 				return False
 		return True
 	if node.name == exists:
 		for constant in interpretation.keys():
-			node = replace_variable_with_constant_in_quantified_subtree(node, constant)
-			subtree = node.children[1]
+			node_with_const = replace_variable_with_constant_in_quantified_subtree(node, constant)
+			subtree = node_with_const.children[1]
 			subtree_truth_value = check_tree_under_interpretation(subtree, interpretation)
 			if subtree_truth_value == True:
 				return True
@@ -319,6 +321,7 @@ def main(string):
 	check_tree_syntax(tree)
 	theoremhood = check_tree_theoremhood(tree)
 	print(yaml.dump(theoremhood,sort_keys=False))
+	return theoremhood['Theoremhood']  # for debugging
 
 def output_as_string(formula):
 	old_stdout = sys.stdout
@@ -332,14 +335,15 @@ def output_as_string(formula):
 	return(result_as_string)
 
 
-# main('@x((-Ax+Dx) > (-(-Bx * Cx)))')
-# main('@x@y(-Bx*(Cx*Dx))')
-# main('@x(Ax>(Ax*Bx))')
-# main('@x(Px)')
-# main('@z@x!y((x=y)+(y=z))')
-# main('!y@x(Fy>Fx)')
-# main('@xAx')
-# main('@x((Ax>Bx))')
-# main('@x!t((Ax>Bx))')
-# main('@x!t(Ax>Bx)')
-# main('@x!d(Px*-Pd)')
+# assert main('@x((-Ax+Dx) > (-(-Bx * Cx)))') == False
+# assert main('@x@y(-Bx*(Cx*Dx))') == False
+# assert main('@x(Ax>(Ax*Bx))') == False
+# assert main('@x(Ax>(Ax+Bx))') == True
+# assert main('@x!y((x=y))') == True
+# assert main('!y@x(Fy>Fx)') == True
+# assert main('@xAx') == False
+# assert main('@x((Ax>Bx))') == False
+# assert main('@x!t((Ax>Bx))') == False
+# assert main('@x!t(Ax>Bx)') == False
+# assert main('@x!d(Px+-Pd)') == True
+# assert main('@x@y(Px>(Px*Py))') == False
