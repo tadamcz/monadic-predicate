@@ -52,8 +52,8 @@ def add_parens(string):
 	i = 0
 	while i < len(string):
 		two_character_window = string[i:i + 2]
-		existential_with_variable = ['!' + x for x in variables]
-		universal_with_variable = ['@' + x for x in variables]
+		existential_with_variable = [exists + x for x in variables]
+		universal_with_variable = [for_all + x for x in variables]
 		candidate_strings = ['-('] + existential_with_variable + universal_with_variable
 		if two_character_window in candidate_strings:
 			subexpression_right = find_matching_paren(string, start_index=i + 1)
@@ -117,17 +117,17 @@ def print_my_tree(tree,use_unicode=False):
 	for pre, fill, node in RenderTree(tree):
 		name_to_print = node.name
 		if use_unicode:
-			if node.name == '>':
+			if node.name == right_arrow:
 				name_to_print = '→'
-			if node.name == '@':
+			if node.name == for_all:
 				name_to_print = '∀'
-			if node.name == '!':
+			if node.name == exists:
 				name_to_print = '∃'
-			if node.name == '-':
+			if node.name == negation:
 				name_to_print = '¬'
-			if node.name == '*':
+			if node.name == and_op:
 				name_to_print = '∧'
-			if node.name == '+':
+			if node.name == or_op:
 				name_to_print = '∨'
 		print("%s%s" % (pre, name_to_print))
 
@@ -270,7 +270,7 @@ def check_tree_under_interpretation(node,interpretation):
 	# if node.name == 'root':
 	# 	return check_tree_under_interpretation(node.children[0],interpretation)
 
-	if node.name == '@':
+	if node.name == for_all:
 		for constant in interpretation.keys():
 			node = replace_variable_with_constant_in_quantified_subtree(node,constant)
 			subtree = node.children[1]
@@ -278,7 +278,7 @@ def check_tree_under_interpretation(node,interpretation):
 			if subtree_truth_value == False:
 				return False
 		return True
-	if node.name == '!':
+	if node.name == exists:
 		for constant in interpretation.keys():
 			node = replace_variable_with_constant_in_quantified_subtree(node, constant)
 			subtree = node.children[1]
@@ -286,15 +286,15 @@ def check_tree_under_interpretation(node,interpretation):
 			if subtree_truth_value == True:
 				return True
 		return False
-	if node.name == '*':
+	if node.name == and_op:
 		return check_tree_under_interpretation(node.children[0],interpretation) and check_tree_under_interpretation(node.children[1],interpretation)
-	if node.name == '+':
+	if node.name == or_op:
 		return check_tree_under_interpretation(node.children[0],interpretation) or check_tree_under_interpretation(node.children[1],interpretation)
-	if node.name == '-':
+	if node.name == negation:
 		return not check_tree_under_interpretation(node.children[0],interpretation)
-	if node.name == '=':
+	if node.name == equality:
 		return node.children[0].name == node.children[1].name
-	if node.name == '>':
+	if node.name == right_arrow:
 		return not(
 				check_tree_under_interpretation(node.children[0],interpretation) and not check_tree_under_interpretation(node.children[1],interpretation)
 		)
