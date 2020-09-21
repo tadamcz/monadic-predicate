@@ -335,15 +335,3 @@ def output_as_string(formula):
 	return(result_as_string)
 
 
-# assert main('@x((-Ax+Dx) > (-(-Bx * Cx)))') == False
-# assert main('@x@y(-Bx*(Cx*Dx))') == False
-# assert main('@x(Ax>(Ax*Bx))') == False
-# assert main('@x(Ax>(Ax+Bx))') == True
-# assert main('@x!y((x=y))') == True
-# assert main('!y@x(Fy>Fx)') == True
-# assert main('@xAx') == False
-# assert main('@x((Ax>Bx))') == False
-# assert main('@x!t((Ax>Bx))') == False
-# assert main('@x!t(Ax>Bx)') == False
-# assert main('@x!d(Px+-Pd)') == True
-# assert main('@x@y(Px>(Px*Py))') == False
