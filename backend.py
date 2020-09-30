@@ -267,10 +267,6 @@ def check_tree_under_interpretation(node,interpretation):
 				node.name = constant
 		return tree_with_constant
 
-	# # pretty hacky: ignore any node named 'root'. The better way would be to solve the bug in the parser
-	# # that adds superfluous 'root' nodes when there are superfluous parentheses.
-	# if node.name == 'root':
-	# 	return check_tree_under_interpretation(node.children[0],interpretation)
 
 	if node.name == for_all:
 		for constant in interpretation.keys():
