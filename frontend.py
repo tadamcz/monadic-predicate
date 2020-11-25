@@ -18,18 +18,31 @@ class FormulaForm(FlaskForm):
 @app.route('/', methods=['GET','POST'])
 def index():
 	form = FormulaForm()
+	user_input = False
+
 	if request.method == 'GET':
-		return render_template('index.html', form=form,symbols=['→','∀','∃','¬','∧','∨'])
+		if request.args:
+			formula = request.args['formula']
+			form.formula.data = formula  # put URL param into form
+			user_input = True
+
 	if request.method == 'POST':
 		formula = form.data['formula']
 		formula = parse_unicode(formula)
+		user_input = True
+
+	if user_input:
 		try:
 			result = backend.output_as_string(formula)
 		except Exception as e:
 			result = str(e)
 		result = result.replace('\n','<br>')
 		result = result.replace('    ','&emsp;&emsp;&emsp;&emsp;')
-		return render_template('index.html', form=form,result=result,symbols=['→','∀','∃','¬','∧','∨'])
+		return render_template('index.html', form=form, result=result, symbols=['→', '∀', '∃', '¬', '∧', '∨'])
+
+	else:
+		return render_template('index.html', form=form,symbols=['→','∀','∃','¬','∧','∨'])
+
 
 
 def parse_unicode(formula):
