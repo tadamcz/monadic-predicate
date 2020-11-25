@@ -54,10 +54,13 @@ You can add logical symbols by clicking the buttons above, or by using this corr
     </table>
 </div>
 
-
+{% if result %}
 <div class="myclass">
-<pre>{{result|safe}}</pre>
+<pre style="font-size: 22px; border: 1px solid; padding: 1em">
+    {{result|safe}}
+</pre>
 </div>
+{% endif %}
 
 <div>
     By <a href="https://tmkadamcz.github.io/">Tom Adamczewski</a>.
