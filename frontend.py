@@ -21,10 +21,12 @@ def index():
 	user_input = False
 
 	if request.method == 'GET':
-		if request.args:
+		try:
 			formula = request.args['formula']
 			form.formula.data = formula  # put URL param into form
 			user_input = True
+		except KeyError:  # if invalid URL params are given
+			pass
 
 	if request.method == 'POST':
 		formula = form.data['formula']
