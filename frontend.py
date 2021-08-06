@@ -7,14 +7,12 @@ import os
 from flask_wtf import FlaskForm, CSRFProtect  # Flask-WTF provides your Flask application integration with WTForms.
 
 app = Flask(__name__)
-csrf = CSRFProtect(app)
-app.secret_key = os.environ['csrf']
+app.config['WTF_CSRF_ENABLED'] = False  # not needed, there are no user accounts
 
 class FormulaForm(FlaskForm):
 	formula = StringField('Enter the formula to check')
 
 
-@csrf.exempt  # I believe we don't need CSRF for a site without any user accounts
 @app.route('/', methods=['GET','POST'])
 def index():
 	form = FormulaForm()
