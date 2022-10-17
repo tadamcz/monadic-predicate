@@ -34,8 +34,9 @@
     with a variable, such as Px, are supported.</div>
 
 Example formulae:
-<a href="/?formula=@x!y(x=y)"> <pre>@x!y(x=y)</pre></a>
-<a href="/?formula=@x(Ax>(Ax*Bx))"> <pre>@x(Ax>(Ax*Bx))</pre></a>
+{%for formula in ['@x!y(x=y)','@x(Ax > (Ax*Bx))','!x(Ax*Bx) > @x(Ax+Bx)']%}
+    <a href="/?formula={{ formula | urlencode }}"> <pre>{{ formula }}</pre></a>
+{%endfor%}
 
 You can add logical symbols by clicking the buttons above, or by using this correspondence:
 
